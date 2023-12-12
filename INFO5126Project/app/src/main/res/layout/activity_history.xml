@@ -17,6 +17,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:onClick="backToMainPage"
-        android:text="Back to Main Page" />
+        android:text="@string/back_to_main" />
 
 </RelativeLayout>

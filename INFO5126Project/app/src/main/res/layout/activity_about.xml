@@ -1,26 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <ImageView
+        android:id="@+id/imageViewLogoAbout"
+        android:layout_width="116dp"
+        android:layout_height="96dp"
+        android:layout_marginTop="4dp"
+        android:src="@drawable/logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/logo"
+        tools:srcCompat="@drawable/logo" />
+
     <TextView
         android:id="@+id/tvAboutText"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="INFO5126 project by Hongseok Kim and Stanislav Kovalenko\n\nThe app is used to watch recent news (use news API) and save news that you opened\n\nFor detailed instruction check word document."
+        android:layout_marginTop="32dp"
+        android:text="@string/about_text"
         android:textSize="18sp"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imageViewLogoAbout" />
 
     <Button
         android:id="@+id/buttonRead"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/tvAboutText"
-        android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
         android:onClick="onClickBack"
-        android:text="Back to Main Page" />
+        android:text="@string/back_to_main"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvAboutText" />
 
-</RelativeLayout>
+    <Button
+        android:id="@+id/buttonRead2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:onClick="onClickBack"
+        android:text="@string/back_to_main"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvAboutText" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

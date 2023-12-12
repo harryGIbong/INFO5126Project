@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.Firebase
@@ -56,7 +57,7 @@ class RegisterActivity : AppCompatActivity() {
                                 Log.w("TAG", "createUserWithEmail:failure", task.exception)
                                 Toast.makeText(
                                     baseContext,
-                                    "Authentication failed.",
+                                    task.exception.toString().split(":")[1],
                                     Toast.LENGTH_SHORT,
                                 ).show()
                                 println("Authentication failed.")
@@ -67,5 +68,9 @@ class RegisterActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+    fun backToMainPage(view: View) {
+        finish()
     }
 }

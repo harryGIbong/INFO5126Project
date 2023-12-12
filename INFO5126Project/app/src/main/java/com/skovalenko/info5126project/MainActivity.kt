@@ -7,6 +7,8 @@ import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.Toast
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,6 +23,7 @@ import com.google.gson.Gson
 import com.skovalenko.info5126project.RecyclerView.NewsAdapter
 import com.skovalenko.info5126project.RecyclerView.NewsItem
 import com.skovalenko.info5126project.databinding.ActivityMainBinding
+import com.skovalenko.info5126project.viewModel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -37,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
     private lateinit var recyclerView: RecyclerView
     private lateinit var newsAdapter: NewsAdapter
+    lateinit var viewModel: MainViewModel
     private var newsItems: List<NewsItem> = listOf()
     val db = Firebase.firestore
     val newsKey:String = "news"
@@ -50,9 +54,24 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        //binding.textViewUser.text = intent.getStringExtra("userid")
-        binding.textViewEmail.text = intent.getStringExtra("email")
 
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+
+        val newsObserver = Observer<List<NewsItem>> {
+            newNewsItems -> newsAdapter.updateItems(newNewsItems)
+
+        }
+
+        viewModel.newsItems.observe(this, newsObserver);
+
+        val toastObserver = Observer<String> { message ->
+            if (message != null) {
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                viewModel.toastMessage.value = null
+            }
+        }
+
+        viewModel.toastMessage.observe(this, toastObserver);
         newsItems = ArrayList()
 
         // Initialize the adapter with the (currently empty) list of news items
@@ -70,12 +89,11 @@ class MainActivity : AppCompatActivity() {
 
         newsAdapter.itemClickListener = object : NewsAdapter.OnNewsItemClickListener {
             override fun onNewsTitleClicked(title: String) {
-                Log.d("MainActivity", "News title clicked: $title")
-                saveTitleToDatabase(title)
+                viewModel.saveTitleToDatabase(title)
             }
 
             override fun onNewsItemExpanded(title: String) {
-                saveTitleToDatabase(title)
+                viewModel.saveTitleToDatabase(title);
             }
         }
 
@@ -98,46 +116,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.buttonRead.setOnClickListener {
-            if (binding.editTextAdd.text.toString() != "")
+            val title = binding.editTextAdd.text.toString()
+            if (title != "")
             {
-                CoroutineScope(Dispatchers.Main).launch {
-                    val request: APIFormat? = getNewsDataFromCoroutine(binding.editTextAdd.text.toString())
+                CoroutineScope(Dispatchers.IO).launch {
+                    viewModel.fetchNewsData(title)
                 }
             }
         }
-    }
 
-    fun saveTitleToDatabase(title: String) {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser != null) {
-            val refinedTitle = title.substringAfter(") ")
-
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-            val date = dateFormat.format(Date())
-
-            val titleWithDate = "[$date]  $refinedTitle"
-
-            val userDocumentRef = db.collection("news_topics").document(currentUser.uid)
-
-            // Append the refined news title to the 'news' array field in the document
-            val titleUpdate = hashMapOf<String, Any>(
-                "news" to FieldValue.arrayUnion(titleWithDate)
-            )
-
-            // Run a transaction to ensure that the news array is updated atomically
-            db.runTransaction { transaction ->
-                transaction.set(userDocumentRef, titleUpdate, SetOptions.merge())
-            }.addOnSuccessListener {
-                Log.d("Firebase", "News title appended successfully for user ${currentUser.uid}")
-            }.addOnFailureListener { e ->
-                Log.d("Firebase", "Error appending news title for user ${currentUser.uid}", e)
-            }
-        } else {
-            Toast.makeText(this, "User must be logged in to save news title.", Toast.LENGTH_SHORT).show()
+        binding.buttonNextPage.setOnClickListener {
+            viewModel.fetchNextPage()
         }
+
+
     }
-
-
 
     private suspend fun getNewsDataFromCoroutine(title: String): APIFormat? {
         val accumulatedArticles = ArrayList<Article>()
